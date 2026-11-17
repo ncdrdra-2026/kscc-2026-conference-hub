@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KSCC 2026 Agenda Explorer</title>
+  <style>
+    :root { --ink:#18313a; --muted:#62757b; --paper:#f7f6f1; --line:#d9ddd8; --teal:#116466; --blue:#1d4d75; --sun:#f3c969; --orange:#d96b32; --card:#fffefa; }
+    * { box-sizing:border-box; } body { margin:0; color:var(--ink); font-family:"Noto Sans TC","Microsoft JhengHei",Arial,sans-serif; background:var(--paper); }
+    button,input,select { font:inherit; } button { cursor:pointer; } .wrap { max-width:1280px; margin:auto; padding:0 28px; }
+    .hero { background:linear-gradient(115deg,#123d47 0%,#146468 58%,#1e7b7c 100%); color:white; padding:42px 0 34px; }
+    .eyebrow { color:#d3efe3; letter-spacing:.11em; font-size:.78rem; font-weight:700; text-transform:uppercase; } h1 { font-family:Georgia,"Noto Serif TC",serif; font-size:clamp(2rem,5vw,4.1rem); margin:10px 0; line-height:1; } .hero p { max-width:790px; font-size:1.05rem; line-height:1.65; color:#ecf7f3; }
+    .stats { display:flex; gap:24px; flex-wrap:wrap; margin-top:22px; } .stat { border-left:1px solid #a7d8cf; padding-left:14px; } .stat b { display:block; font-size:1.45rem; } .stat span { color:#cde9e2; font-size:.84rem; }
+    .source { background:#e7f0e9; color:#36544a; padding:11px 0; font-size:.88rem; } .source strong { color:#1d4d3c; }
+    nav { display:flex; gap:8px; padding:18px 0 8px; border-bottom:1px solid var(--line); overflow-x:auto; } nav button,nav a { background:transparent; border:0; color:var(--muted); padding:10px 14px; border-radius:4px 4px 0 0; white-space:nowrap; text-decoration:none; } nav button.active { background:var(--ink); color:#fff; }
+    main { padding:26px 0 64px; } section[hidden] { display:none; } .section-head { display:flex; justify-content:space-between; align-items:end; gap:16px; margin:0 0 18px; } h2 { font-size:1.45rem; margin:0; } .section-head p { color:var(--muted); margin:4px 0 0; font-size:.92rem; }
+    .filters { display:grid; grid-template-columns:1.45fr repeat(3,minmax(130px,.55fr)); gap:10px; margin:0 0 20px; } input,select { width:100%; border:1px solid #cbd4cf; border-radius:5px; background:white; padding:11px 12px; color:var(--ink); }
+    .notice { padding:12px 15px; background:#fff6dd; border-left:4px solid var(--sun); margin-bottom:18px; font-size:.9rem; line-height:1.55; } .notice b { color:#714d00; }
+    .agenda { display:grid; grid-template-columns:repeat(3,1fr); gap:17px; align-items:start; } .day { background:#e8eeea; padding:14px; border-top:5px solid var(--teal); } .day h3 { margin:0 0 2px; font-size:1.13rem; } .day .date { color:var(--muted); font-size:.85rem; margin-bottom:13px; }
+    .session { background:var(--card); border:1px solid var(--line); padding:12px; margin:8px 0; box-shadow:0 1px 0 rgba(0,0,0,.03); } .session:hover { border-color:#78a29d; } .session-top { display:flex; gap:8px; justify-content:space-between; align-items:center; color:var(--teal); font-weight:700; font-size:.82rem; } .room { color:var(--muted); font-weight:600; text-align:right; } .session h4 { margin:8px 0 7px; font-size:.96rem; line-height:1.35; } .meta { color:var(--muted); font-size:.8rem; line-height:1.45; } .tags { display:flex; flex-wrap:wrap; gap:5px; margin-top:9px; } .tag { background:#edf4f2; color:#285b5b; padding:3px 7px; border-radius:999px; font-size:.72rem; font-weight:700; } .tag.bilateral { background:#fff0d9; color:#8a4a11; } .tag.recorded { background:#e4eefd; color:#1e4d82; }
+    .empty { grid-column:1/-1; padding:34px; text-align:center; color:var(--muted); background:#fff; border:1px dashed var(--line); }
+    .translate-layout { display:grid; grid-template-columns:1.05fr .95fr; gap:22px; } .panel { background:var(--card); border:1px solid var(--line); padding:20px; } .panel h3 { margin:0 0 7px; font-size:1.1rem; } .panel p { color:var(--muted); line-height:1.55; font-size:.92rem; } .language-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:15px 0; } label { display:block; color:var(--muted); font-size:.78rem; font-weight:700; margin-bottom:5px; }
+    .btn { border:0; border-radius:5px; padding:10px 14px; background:var(--teal); color:#fff; font-weight:700; } .btn.secondary { background:#e6eeea; color:#245653; } .btn.warn { background:var(--orange); } .btn:disabled { opacity:.55; cursor:not-allowed; }
+    .caption { min-height:225px; background:#10282e; color:#eaf5f0; padding:18px; margin-top:14px; border-radius:3px; } .caption .origin { font-size:.75rem; color:#9ccac0; text-transform:uppercase; letter-spacing:.08em; } .caption .line { padding:10px 0; border-bottom:1px solid #31535a; line-height:1.5; } .caption .line:last-child { border:0; } .caption .translation { display:block; color:#f3cf75; margin-top:4px; font-size:.9rem; }
+    .flow { display:grid; gap:0; margin-top:16px; } .flow div { position:relative; padding:0 0 19px 30px; line-height:1.45; } .flow div:before { content:""; position:absolute; left:7px; top:6px; width:9px; height:9px; border-radius:50%; background:var(--teal); } .flow div:not(:last-child):after { content:""; position:absolute; left:11px; top:17px; width:1px; height:calc(100% - 7px); background:#a7c9c3; } .flow b { display:block; font-size:.92rem; }
+    .callout { margin-top:15px; padding:13px; background:#e7f0f7; border-left:4px solid var(--blue); color:#24485f; line-height:1.55; font-size:.9rem; }
+    .record-layout { display:grid; grid-template-columns:.8fr 1.2fr; gap:22px; } .upload-zone { padding:20px; border:2px dashed #8db7ad; background:#f1f8f4; } .upload-zone input { margin:9px 0 12px; background:white; } .record-list { display:grid; gap:10px; } .record { display:flex; align-items:center; gap:12px; padding:12px; border:1px solid var(--line); background:white; } .record .dot { width:10px; height:10px; border-radius:50%; background:var(--orange); flex:0 0 auto; } .record .record-text { flex:1; } .record strong { display:block; font-size:.91rem; } .record span { font-size:.8rem; color:var(--muted); } .status { font-size:.74rem; font-weight:700; color:#196257; background:#e2f4ec; padding:4px 7px; white-space:nowrap; }
+    .rules { margin:0; padding-left:19px; color:var(--muted); font-size:.88rem; line-height:1.75; } .footer { font-size:.78rem; color:var(--muted); padding:20px 0; border-top:1px solid var(--line); }
+    @media (max-width:900px) { .agenda { grid-template-columns:1fr; } .translate-layout,.record-layout { grid-template-columns:1fr; } .filters { grid-template-columns:1fr 1fr; } .filters input { grid-column:1/-1; } }
+    @media (max-width:560px) { .wrap { padding:0 16px; } .hero { padding:30px 0; } .language-grid { grid-template-columns:1fr; } .section-head { display:block; } }
+  </style>
+</head>
+<body>
+  <header class="hero"><div class="wrap">
+    <div class="eyebrow">ICC Jeju · 2–4 December 2026</div><h1>KSCC 2026<br>Agenda Explorer</h1>
+    <p>供與會者查詢平行議程、進入雙邊討論的即時字幕／翻譯頁面，以及依場次保存錄音與可校訂會議記錄的線上原型。</p>
+    <div class="stats"><div class="stat"><b>3</b><span>conference days</span></div><div class="stat"><b>7</b><span>parallel venues</span></div><div class="stat"><b>3</b><span>caption languages</span></div></div>
+  </div></header>
+  <div class="source"><div class="wrap"><strong>內容來源：</strong>KSCC International Conference 2026 Program（2026-11-10）及 Presentation List（2026-11-13）。本頁為查詢與功能原型；上線前應由主辦單位逐項核對最終議程。</div></div>
+  <div class="wrap"><nav aria-label="功能分頁"><a href="index.html">首頁</a><button class="active" data-tab="agenda">議程查詢</button><button data-tab="translation">雙邊討論翻譯</button><button data-tab="records">錄音與會議記錄</button></nav>
+  <main>
+    <section id="agenda"><div class="section-head"><div><h2>議程查詢</h2><p>可依日期、會議室、關鍵字及「臺灣／雙邊」標籤篩選。</p></div><span id="resultCount" class="tag">—</span></div>
+      <div class="filters"><input id="search" type="search" placeholder="搜尋場次、主題、機構或關鍵字" aria-label="搜尋議程"><select id="dayFilter" aria-label="日期"><option value="all">所有日期</option><option value="Dec 2">12 月 2 日（三）</option><option value="Dec 3">12 月 3 日（四）</option><option value="Dec 4">12 月 4 日（五）</option></select><select id="roomFilter" aria-label="會議室"><option value="all">所有會議室</option><option>Room A · 201A</option><option>Room B · 201B</option><option>Room C · 202A</option><option>Room D · 202B</option><option>Room E · 203</option><option>Baekrok Hall A</option><option>Baekrok Hall B</option></select><select id="typeFilter" aria-label="場次類型"><option value="all">所有場次</option><option value="bilateral">臺灣／雙邊討論</option><option value="discussion">含討論</option></select></div>
+      <div class="notice"><b>雙邊討論提醒：</b>已優先標示 12 月 4 日 Room E 的 KEI 1、KEI 2（含 NCDR, Taiwan 評論／發表）及含臺灣與國際評論者的場次。此標籤供溝通準備用，不代表主辦方正式定義的「雙邊會議」。目前是主要場次與臺灣相關場次的公開原型，尚未逐筆收錄 Presentation List 的所有論文發表。</div>
+      <div id="agendaGrid" class="agenda"></div>
+    </section>
+    <section id="translation" hidden><div class="section-head"><div><h2>雙邊討論：即時翻譯設計</h2><p>建議以「原音＋文字字幕＋個人耳機語音」三層進行，而不是把翻譯語音直接播到會場喇叭。</p></div><span class="tag bilateral">需人員與服務串接</span></div>
+      <div class="translate-layout"><article class="panel"><h3>字幕／翻譯控制台原型</h3><p>此處使用示範字幕，尚未串接語音辨識、機器翻譯或錄音服務。正式上線時，控制台會把每一句原文、譯文、時間戳與人工更正保留為記錄。</p>
+        <div class="language-grid"><div><label for="sourceLang">發言原文</label><select id="sourceLang"><option value="ko">한국어／韓語</option><option value="zh">繁體中文</option><option value="en">English</option></select></div><div><label for="targetLang">聽者字幕</label><select id="targetLang"><option value="zh">繁體中文</option><option value="ko">한국어／韓語</option><option value="en">English</option></select></div></div>
+        <button id="captionDemo" class="btn">顯示示範字幕流程</button> <button id="clearCaption" class="btn secondary">清除</button>
+        <div class="caption" id="captionBox"><div class="origin">DEMO CAPTION CHANNEL · not connected</div><div class="line">等待主持人開始討論……<span class="translation">議程頁可先提供中、韓、英題名與講者名單。</span></div></div>
+        <div class="callout"><b>品質界線：</b>AI 可提供近即時字幕與初譯；涉及承諾、決議、數字、專有名詞及跨國協議時，應由雙語人員確認後再列入正式紀錄。</div>
+      </article><article class="panel"><h3>一個發言回合的正確路徑</h3><div class="flow"><div><b>1. 取得發言權</b>主持人點名；發言者在桌上平板選原文語言（韓／繁中／英）。</div><div><b>2. 收乾淨原音</b>每人用耳麥或指定手持麥克風；不要使用會場混音做逐人辨識。</div><div><b>3. 語音辨識與翻譯</b>原文音軌 → 語音辨識 → 句級翻譯 → 與術語庫比對 → 多語字幕。</div><div><b>4. 個人接收</b>聽者在手機選繁中、韓語或英文；需要語音時由個人耳機收聽 TTS 或真人口譯頻道。</div><div><b>5. 人工確認與封存</b>口譯／記錄員修訂關鍵句；版本化保存原音、逐字稿、譯文及決議摘要。</div></div>
+        <div class="callout"><b>最重要的現場規則：</b>要求全程戴耳機，翻譯音不要回灌到房間；每次一人發言、主持人控制輪次。這比單純換一個翻譯 App 更能避免回音、串音與多人同講造成的錯譯。</div>
+      </article></div>
+    </section>
+    <section id="records" hidden><div class="section-head"><div><h2>錄音與會議記錄</h2><p>依場次上傳原始音檔，後續產生可校訂的逐字稿、翻譯及決議摘要。</p></div><span class="tag recorded">權限與留存待設定</span></div>
+      <div class="record-layout"><article class="panel"><h3>新增場次錄音</h3><div class="upload-zone"><label for="recordSession">對應場次</label><select id="recordSession"></select><label for="audioFile">音檔（M4A、MP3、WAV）</label><input id="audioFile" type="file" accept="audio/*"><button id="uploadAudio" class="btn">加入上傳佇列</button><p id="uploadMessage">原型僅顯示佇列，不會將檔案上傳至任何伺服器。</p></div><h3 style="margin-top:20px">正式系統需設定</h3><ul class="rules"><li>場前／場內錄音告知與同意；未同意者的替代發言安排。</li><li>原始音檔、逐字稿、譯文分層授權；講者只可看自己的場次。</li><li>保存期限、刪除流程與下載權限；決議摘要需標示確認人與確認日期。</li></ul></article><article class="panel"><h3>會議記錄佇列</h3><div class="record-list" id="recordList"><div class="record"><span class="dot"></span><div class="record-text"><strong>KEI 2 · Cross-sectoral Climate Adaptation</strong><span>預計：原音 → 中／韓／英逐字稿 → 人工校訂 → 決議摘要</span></div><span class="status">待上傳</span></div><div class="record"><span class="dot"></span><div class="record-text"><strong>NIMS &amp; UNIST 3 · Integrated Discussion</strong><span>已標示為可能需要多語討論支援</span></div><span class="status">待上傳</span></div></div></article></div>
+    </section>
+  </main><footer class="footer">KSCC 2026 Conference Hub prototype · 議程資料以附檔版本為準 · 上線前請取得主辦方資料、錄音與翻譯服務的授權。</footer></div>
+  <script>
+    const sessions = [
+      {d:'Dec 2',t:'09:00–10:30',r:'Room A · 201A',title:'Climate Change Adaptation 1',detail:'General Session · Climate adaptation research',tags:[]},
+      {d:'Dec 2',t:'09:00–10:30',r:'Room B · 201B',title:'Climate Change & Energy 1',detail:'General Session',tags:[]},
+      {d:'Dec 2',t:'09:00–10:30',r:'Room C · 202A',title:'Climate Change Policy 1',detail:'General Session',tags:[]},
+      {d:'Dec 2',t:'09:00–10:30',r:'Room E · 203',title:'NIMS & UNIST 1 · CORDEX East Asia',detail:'Regional climate projections',tags:['discussion']},
+      {d:'Dec 2',t:'10:45–12:15',r:'Room E · 203',title:'NIMS & UNIST 2 · CORDEX East Asia',detail:'Regional climate projections',tags:['discussion']},
+      {d:'Dec 2',t:'10:45–12:15',r:'Baekrok Hall A',title:'K-RECCAP3',detail:'Ecosystem material cycles',tags:[]},
+      {d:'Dec 2',t:'10:45–12:15',r:'Baekrok Hall B',title:'GWSI 6',detail:'Water and biodiversity',tags:[]},
+      {d:'Dec 2',t:'13:30–14:30',r:'Room E · 203',title:'NIMS & UNIST 3 · Integrated Discussion',detail:'CORDEX East Asia integrated discussion · moderator Dong-Hyun Cha',tags:['discussion','bilateral']},
+      {d:'Dec 2',t:'13:30–14:30',r:'Baekrok Hall B',title:'KEI & Sejong Univ. · AI Technologies for Compound Disaster Response',detail:'Strategies for applying AI technologies',tags:[]},
+      {d:'Dec 2',t:'14:30–16:00',r:'Room A · 201A',title:'Urban Climate Resilience Assessment',detail:'Seoul National Univ. session',tags:['discussion']},
+      {d:'Dec 2',t:'14:30–16:00',r:'Room C · 202A',title:'Wetland Ecosystem Response',detail:'KEI session · ecosystem assessment and prediction',tags:['discussion']},
+      {d:'Dec 2',t:'14:30–16:00',r:'Baekrok Hall B',title:'Global Climate Dialogues',detail:'GSTC & KSCC Steering Committee',tags:['discussion']},
+      {d:'Dec 3',t:'09:00–10:30',r:'Room A · 201A',title:'Agriculture and NDCs',detail:'Trends in climate change within the agricultural sector',tags:[]},
+      {d:'Dec 3',t:'09:00–10:30',r:'Room B · 201B',title:'National GHG Inventory Roadmap',detail:'Global carbon neutrality',tags:[]},
+      {d:'Dec 3',t:'09:00–10:30',r:'Baekrok Hall A',title:'9th Adaptation Research Forum',detail:'Future directions for adaptation R&D',tags:['discussion']},
+      {d:'Dec 3',t:'10:45–12:15',r:'Room A · 201A',title:'Evidence-Based Climate Technology Platform',detail:'KEI session',tags:[]},
+      {d:'Dec 3',t:'10:45–12:15',r:'Room C · 202A',title:'Corporate Use of Climate Technologies',detail:'Policy measures',tags:[]},
+      {d:'Dec 3',t:'10:45–12:15',r:'Baekrok Hall A',title:'Climate Change Adaptation R&D Forum 2026',detail:'The intersection of science, technology and policy',tags:['discussion']},
+      {d:'Dec 3',t:'13:30–14:30',r:'Room A · 201A',title:'Poster Presentation 2',detail:'1F Lobby',tags:[]},
+      {d:'Dec 3',t:'14:30–16:00',r:'Room D · 202B',title:'Digital Twin Climate Impact Monitoring',detail:'Damage detection technologies',tags:[]},
+      {d:'Dec 3',t:'14:30–16:00',r:'Room E · 203',title:'NIGT 3 · International Technology Cooperation',detail:'Korea’s global strategy on carbon neutrality',tags:['discussion']},
+      {d:'Dec 3',t:'14:30–16:00',r:'Baekrok Hall A',title:'Urban Climate Adaptation at Multiple Scales',detail:'NIER & UNIST',tags:[]},
+      {d:'Dec 4',t:'09:00–10:30',r:'Room E · 203',title:'KEI 1 · Cross-sectoral Climate Adaptation',detail:'Includes Hsin-Chi Li (NCDR, Taiwan) as discussant',tags:['discussion','bilateral']},
+      {d:'Dec 4',t:'09:00–10:30',r:'Baekrok Hall A',title:'NIER & UOS 1 · Climate Risk Map',detail:'Introduction, assessment and provision methodology',tags:['discussion']},
+      {d:'Dec 4',t:'10:45–12:15',r:'Room E · 203',title:'KEI 2 · Cross-sector Applications of Climate Change Disaster Risk Maps',detail:'Includes Yun-Ju Chen (NCDR, Taiwan) presentation and Hsin-Chi Li (NCDR, Taiwan) discussant',tags:['discussion','bilateral']},
+      {d:'Dec 4',t:'10:45–12:15',r:'Baekrok Hall A',title:'NIER & UOS 2 · Sector-specific Climate Risk Maps',detail:'Rainfall-induced sediment, health, flood, drought and road risk maps',tags:['discussion']},
+      {d:'Dec 4',t:'13:15–14:45',r:'Room A · 201A',title:'Climate Change Adaptation 5',detail:'Flood hazard maps and adaptation',tags:[]},
+      {d:'Dec 4',t:'13:15–14:45',r:'Room C · 202A',title:'Climate Change Policy 3',detail:'Climate adaptation policy',tags:[]},
+      {d:'Dec 4',t:'13:15–14:45',r:'Baekrok Hall A',title:'UNICEF & APCC · Climate Information and Early Warning',detail:'Includes international discussants, including Taiwan',tags:['discussion','bilateral']},
+      {d:'Dec 4',t:'15:00–16:30',r:'Room A · 201A',title:'Climate Change Adaptation 6',detail:'Adaptation solutions and implementation',tags:[]},
+      {d:'Dec 4',t:'15:00–16:30',r:'Room C · 202A',title:'Climate Change Policy 4',detail:'Includes Taiwan agricultural weather-services assessment',tags:['bilateral']},
+      {d:'Dec 4',t:'15:00–16:30',r:'Room E · 203',title:'Living Lab Technology Policy Utilization Network 2',detail:'Adaptation living-lab decision support',tags:['discussion']},
+      {d:'Dec 4',t:'16:30–17:00',r:'Baekrok Hall A',title:'Closing Ceremony',detail:'Closing remarks, awards ceremony and lucky draw',tags:[]}
+    ];
+    const dates={ 'Dec 2':'12 月 2 日（三）','Dec 3':'12 月 3 日（四）','Dec 4':'12 月 4 日（五）' };
+    const grid=document.querySelector('#agendaGrid'); const search=document.querySelector('#search'); const dayFilter=document.querySelector('#dayFilter'); const roomFilter=document.querySelector('#roomFilter'); const typeFilter=document.querySelector('#typeFilter');
+    function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));}
+    function renderAgenda(){ const q=search.value.trim().toLowerCase(); const day=dayFilter.value, room=roomFilter.value, type=typeFilter.value; const show=sessions.filter(x=> (day==='all'||x.d===day) && (room==='all'||x.r===room) && (type==='all'||x.tags.includes(type)) && (!q || [x.title,x.detail,x.r,x.d].join(' ').toLowerCase().includes(q) || (q.includes('臺')&&x.tags.includes('bilateral')))); document.querySelector('#resultCount').textContent=`${show.length} 個場次`;
+      if(!show.length){grid.innerHTML='<div class="empty">找不到符合條件的場次。請調整關鍵字或篩選條件。</div>';return;} grid.innerHTML=Object.keys(dates).map(d=>{const rows=show.filter(x=>x.d===d); if(!rows.length)return ''; return `<article class="day"><h3>${dates[d]}</h3><div class="date">${rows.length} 個已載入場次</div>${rows.map(x=>`<div class="session"><div class="session-top"><span>${x.t}</span><span class="room">${x.r}</span></div><h4>${escapeHtml(x.title)}</h4><div class="meta">${escapeHtml(x.detail)}</div>${x.tags.length?`<div class="tags">${x.tags.map(a=>`<span class="tag ${a==='bilateral'?'bilateral':''}">${a==='bilateral'?'臺灣／雙邊準備':'含討論'}</span>`).join('')}</div>`:''}</div>`).join('')}</article>`;}).join(''); }
+    [search,dayFilter,roomFilter,typeFilter].forEach(el=>el.addEventListener('input',renderAgenda)); renderAgenda();
+    function selectTab(tab){ const target=document.querySelector(`nav button[data-tab="${tab}"]`)||document.querySelector('nav button[data-tab="agenda"]'); document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));target.classList.add('active');document.querySelectorAll('main section').forEach(s=>s.hidden=s.id!==target.dataset.tab); if(history.replaceState) history.replaceState(null,'',`#${target.dataset.tab}`); }
+    document.querySelectorAll('nav button').forEach(btn=>btn.addEventListener('click',()=>selectTab(btn.dataset.tab)));
+    const initialTab=location.hash.replace('#',''); if(['agenda','translation','records'].includes(initialTab)) selectTab(initialTab);
+    const phrases={ ko:[['한국어','오늘의 목표는 공동 연구의 다음 단계를 합의하는 것입니다.','今天的目標是確認共同研究的下一步。'],['한국어','자료의 정의와 공유 범위를 회의록에 명확히 남겨 주십시오.','請在會議記錄中明確留下資料定義與共享範圍。']], zh:[['繁體中文','我們建議先確認風險圖的適用尺度與使用限制。','위험지도의 적용 공간 규모와 활용 한계를 먼저 확인할 것을 제안합니다.'],['繁體中文','這一項需由雙方窗口確認後，才能列為正式決議。','이 항목은 양측 담당자의 확인 후에야 공식 결의로 기록할 수 있습니다.']], en:[['English','We propose confirming the intended scale and limitations of the risk maps first.','우선 위험지도의 적용 규모와 한계를 확인할 것을 제안합니다.'],['English','This point should become a formal decision only after confirmation by both focal points.','이 항목은 양측 담당자의 확인 후 공식 결의가 되어야 합니다.']] };
+    function translateDemo(){const lang=document.querySelector('#sourceLang').value, target=document.querySelector('#targetLang').value; const targetName={zh:'繁體中文',ko:'한국어',en:'English'}[target];const box=document.querySelector('#captionBox');box.innerHTML='<div class="origin">DEMO CAPTION CHANNEL · '+targetName+'</div>'+phrases[lang].map((p,i)=>`<div class="line"><b>${String(i+1).padStart(2,'0')}: ${p[0]}</b>　${p[1]}<span class="translation">${targetName}：${target==='zh'?p[2]:target==='ko'?(lang==='zh'?p[2]:p[1]):'(English translation service would appear here)'}</span></div>`).join('');} document.querySelector('#captionDemo').addEventListener('click',translateDemo);document.querySelector('#clearCaption').addEventListener('click',()=>document.querySelector('#captionBox').innerHTML='<div class="origin">DEMO CAPTION CHANNEL · not connected</div><div class="line">等待主持人開始討論……</div>');
+    const recordSession=document.querySelector('#recordSession'); sessions.filter(x=>x.tags.includes('discussion')||x.tags.includes('bilateral')).forEach((x,i)=>recordSession.insertAdjacentHTML('beforeend',`<option value="${i}">${dates[x.d]} · ${x.t} · ${x.title}</option>`)); document.querySelector('#uploadAudio').addEventListener('click',()=>{const file=document.querySelector('#audioFile').files[0];const msg=document.querySelector('#uploadMessage');if(!file){msg.textContent='請先選取音檔。';return;}const name=recordSession.options[recordSession.selectedIndex].text;document.querySelector('#recordList').insertAdjacentHTML('afterbegin',`<div class="record"><span class="dot"></span><div class="record-text"><strong>${escapeHtml(name)}</strong><span>${escapeHtml(file.name)} · ${Math.ceil(file.size/1024/1024)} MB · 本機示範佇列</span></div><span class="status">待處理</span></div>`);msg.textContent='已加入原型佇列；本機頁面不會上傳或保存檔案。';});
+  </script>
+</body>
+</html>
